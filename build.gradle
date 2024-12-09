@@ -11,6 +11,12 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+configurations {
+  compileOnly {
+    extendsFrom annotationProcessor
+  }
+}
+
 repositories {
     mavenCentral()
 }
@@ -25,11 +31,15 @@ dependencies {
     implementation 'org.liquibase:liquibase-core'
     implementation 'org.springframework.boot:spring-boot-devtools'
     implementation 'org.postgresql:postgresql:42.3.1'
-
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    compileOnly("org.projectlombok:lombok")
+  	annotationProcessor("org.projectlombok:lombok")
+  	
     testImplementation 'com.h2database:h2'
     testImplementation 'org.springframework.boot:spring-boot-starter-aop'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.mockito:mockito-core:2.28.2'
+    testImplementation 'org.springframework.security:spring-security-test'
 }
 
 tasks.withType(Test) {

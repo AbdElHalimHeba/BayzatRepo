@@ -1,33 +1,43 @@
 package com.bayzdelivery.jobs;
 
-import com.bayzdelivery.exceptions.GlobalExceptionHandler;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import com.bayzdelivery.client.NotificationService;
+import com.bayzdelivery.dto.DeliveryDto;
+import com.bayzdelivery.service.DeliveryService;
 
 @Component
 public class DelayedDeliveryNotifier {
 
     private static final Logger LOG = LoggerFactory.getLogger(DelayedDeliveryNotifier.class);
 
-    /**
-     *  Use this method for the TASK 3
-     */
+    private static long DELAY = 45l;
+    
+    @Autowired
+    private DeliveryService deliveryService;
+    
+    @Autowired
+    private NotificationService notificationService;
+	
     @Scheduled(fixedDelay = 30000)
     public void checkDelayedDeliveries() {
-
+    	List<DeliveryDto> deliveries = deliveryService.findActiveDeliveriesBetweenInterval(
+    			Instant.now().minus(DELAY, ChronoUnit.MINUTES).minusSeconds(30), 
+    			Instant.now().minus(DELAY, ChronoUnit.MINUTES));
+    
+    	if(!deliveries.isEmpty())
+    		notificationService.notifyCustomerSupport().exceptionally(ex -> {
+    			LOG.error("An error occured while notifying CS", ex);
+    			return null;
+    		});
     }
 
-
-    /**
-     * This method should be called to notify customer support team
-     * It just writes notification on console but it may be email or push notification in real.
-     * So that this method should run in an async way.
-     */
-    @Async
-    public void notifyCustomerSupport() {
-        LOG.info("Customer support team is notified!");
-    }
 }
